@@ -551,14 +551,22 @@ function initTheme() {
   const savedTheme = localStorage.getItem('pantrylog_theme');
   if (savedTheme === 'light') {
     document.body.classList.add('light-theme');
-    themeToggleBtn.innerHTML = '<i class="fa-solid fa-sun"></i>';
+    themeToggleBtn.innerHTML = '<i class="fa-solid fa-sun" style="color: #d97706;"></i> <span>라이트 모드</span>';
+  } else {
+    themeToggleBtn.innerHTML = '<i class="fa-solid fa-moon" style="color: #a7f3d0;"></i> <span>다크 모드</span>';
   }
 }
 
 function toggleTheme() {
   const isLight = document.body.classList.toggle('light-theme');
   localStorage.setItem('pantrylog_theme', isLight ? 'light' : 'dark');
-  themeToggleBtn.innerHTML = isLight ? '<i class="fa-solid fa-sun"></i>' : '<i class="fa-solid fa-moon"></i>';
+  if (isLight) {
+    themeToggleBtn.innerHTML = '<i class="fa-solid fa-sun" style="color: #d97706;"></i> <span>라이트 모드</span>';
+    showToast('☀️ 라이트 모드로 전환되었습니다.', 'info');
+  } else {
+    themeToggleBtn.innerHTML = '<i class="fa-solid fa-moon" style="color: #a7f3d0;"></i> <span>다크 모드</span>';
+    showToast('🌙 다크 모드로 전환되었습니다.', 'info');
+  }
 }
 
 // Helper: Escape HTML string to prevent XSS
