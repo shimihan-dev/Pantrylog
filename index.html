@@ -1,0 +1,296 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>PantryLog - 대용량 식료품 재고 & 소분 관리</title>
+  <meta name="description" content="작은 병에 소분하여 사용하는 대용량 조미료와 식료품의 본품 남아있는 용량을 직관적으로 추적하는 가계 재고 관리 서비스">
+  <link rel="stylesheet" href="style.css">
+  <!-- FontAwesome for clean icons -->
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+</head>
+<body>
+
+  <!-- Top Sticky Header -->
+  <header class="header">
+    <div class="header-inner">
+      <a href="#" class="brand">
+        <div class="brand-icon">
+          <i class="fa-solid fa-bottle-droplet"></i>
+        </div>
+        <div>
+          <div class="brand-title">PantryLog</div>
+          <div class="brand-subtitle">대용량 식료품 & 소분 관리</div>
+        </div>
+      </a>
+
+      <div class="header-controls">
+        <!-- Search Box -->
+        <div class="search-box">
+          <i class="fa-solid fa-magnifying-glass search-icon"></i>
+          <input type="text" id="searchInput" placeholder="간장, 참기름, 브랜드 검색...">
+        </div>
+
+        <!-- Theme Toggle -->
+        <button id="themeToggleBtn" class="icon-btn" title="다크/라이트 테마 변경">
+          <i class="fa-solid fa-moon"></i>
+        </button>
+
+        <!-- Shopping List Button -->
+        <button id="shoppingListBtn" class="btn btn-shopping">
+          <i class="fa-solid fa-cart-shopping"></i>
+          <span>장보기 목록</span>
+          <span id="shoppingBadgeCount" class="badge-count">0</span>
+        </button>
+
+        <!-- Add Item Button -->
+        <button id="openAddModalBtn" class="btn btn-primary">
+          <i class="fa-solid fa-plus"></i>
+          <span>식료품 등록</span>
+        </button>
+      </div>
+    </div>
+  </header>
+
+  <!-- Main Container -->
+  <main class="container">
+
+    <!-- Problem Statement Hero Banner -->
+    <section class="hero-banner">
+      <div class="hero-tag">
+        <i class="fa-solid fa-lightbulb"></i> 실생활 밀착형 소분 관리 솔루션
+      </div>
+      <h1 class="hero-title">작은 병이 비었을 때 본품 잔여량을 걱정하지 마세요</h1>
+      <p class="hero-desc">
+        간장, 참기름, 올리고당 등 대용량 조미료를 작은 병에 소분할 때 <strong>[소분하기]</strong> 버튼 클릭 한 번으로 본품 재고를 자동 업데이트하고, 미리 구매 시점을 놓치지 마세요.
+      </p>
+    </section>
+
+    <!-- Stats Overview -->
+    <section class="stats-grid">
+      <div class="stat-card">
+        <div class="stat-icon total"><i class="fa-solid fa-boxes-stacked"></i></div>
+        <div>
+          <div class="stat-label">전체 품목</div>
+          <div id="statTotalCount" class="stat-value">0</div>
+        </div>
+      </div>
+
+      <div class="stat-card">
+        <div class="stat-icon ok"><i class="fa-solid fa-circle-check"></i></div>
+        <div>
+          <div class="stat-label">🟢 충분</div>
+          <div id="statOkCount" class="stat-value">0</div>
+        </div>
+      </div>
+
+      <div class="stat-card">
+        <div class="stat-icon warning"><i class="fa-solid fa-triangle-exclamation"></i></div>
+        <div>
+          <div class="stat-label">🟡 부족</div>
+          <div id="statWarningCount" class="stat-value">0</div>
+        </div>
+      </div>
+
+      <div class="stat-card">
+        <div class="stat-icon critical"><i class="fa-solid fa-cart-arrow-down"></i></div>
+        <div>
+          <div class="stat-label">🔴 구매 필요</div>
+          <div id="statCriticalCount" class="stat-value">0</div>
+        </div>
+      </div>
+    </section>
+
+    <!-- Controls & Filters Toolbar -->
+    <section class="toolbar">
+      <div class="category-tabs" id="categoryTabs">
+        <button class="tab-btn active" data-category="all">전체보기</button>
+        <button class="tab-btn" data-category="조미료/소스">조미료/소스</button>
+        <button class="tab-btn" data-category="기름/장류">기름/장류</button>
+        <button class="tab-btn" data-category="통조림/면류">통조림/면류</button>
+        <button class="tab-btn" data-category="냉동식품">냉동식품</button>
+        <button class="tab-btn" data-category="기타">기타</button>
+      </div>
+
+      <div class="filter-actions">
+        <select id="statusFilter" class="select-input">
+          <option value="all">모든 상태 보기</option>
+          <option value="critical">🔴 구매 필요만</option>
+          <option value="warning">🟡 부족만</option>
+          <option value="ok">🟢 충분만</option>
+        </select>
+
+        <select id="sortBy" class="select-input">
+          <option value="percentage-asc">남은 비율 적은순</option>
+          <option value="percentage-desc">남은 비율 많은순</option>
+          <option value="name-asc">이름순</option>
+          <option value="updated-desc">최근 수정순</option>
+        </select>
+
+        <button id="resetSampleDataBtn" class="btn btn-secondary" title="샘플 데이터로 초기화">
+          <i class="fa-solid fa-rotate-left"></i>
+        </button>
+      </div>
+    </section>
+
+    <!-- Pantry Items Grid -->
+    <section id="pantryGrid" class="pantry-grid">
+      <!-- Dynamic pantry cards injected via app.js -->
+    </section>
+
+  </main>
+
+  <!-- Add / Edit Item Modal -->
+  <div id="itemModalBackdrop" class="modal-backdrop">
+    <div class="modal">
+      <div class="modal-header">
+        <h3 id="itemModalTitle" class="modal-title">식료품 신규 등록</h3>
+        <button id="closeItemModalBtn" class="close-btn"><i class="fa-solid fa-xmark"></i></button>
+      </div>
+      <form id="itemForm">
+        <div class="modal-body">
+          <input type="hidden" id="itemId">
+
+          <div class="form-group">
+            <label class="form-label" for="itemName">식료품 이름 *</label>
+            <input type="text" id="itemName" class="form-input" placeholder="예: 진간장 (대용량)" required>
+          </div>
+
+          <div class="form-row">
+            <div class="form-group">
+              <label class="form-label" for="itemBrand">브랜드</label>
+              <input type="text" id="itemBrand" class="form-input" placeholder="예: 샘표">
+            </div>
+            <div class="form-group">
+              <label class="form-label" for="itemCategory">카테고리</label>
+              <select id="itemCategory" class="form-select">
+                <option value="기름/장류">기름/장류</option>
+                <option value="조미료/소스">조미료/소스</option>
+                <option value="통조림/면류">통조림/면류</option>
+                <option value="냉동식품">냉동식품</option>
+                <option value="기타">기타</option>
+              </select>
+            </div>
+          </div>
+
+          <div class="form-row">
+            <div class="form-group">
+              <label class="form-label" for="itemInitialCap">초기/전체 용량 *</label>
+              <input type="number" id="itemInitialCap" class="form-input" placeholder="1800" min="1" required>
+            </div>
+            <div class="form-group">
+              <label class="form-label" for="itemCurrentCap">현재 남은 용량 *</label>
+              <input type="number" id="itemCurrentCap" class="form-input" placeholder="920" min="0" required>
+            </div>
+          </div>
+
+          <div class="form-row">
+            <div class="form-group">
+              <label class="form-label" for="itemUnit">단위</label>
+              <select id="itemUnit" class="form-select">
+                <option value="mL">mL (밀리리터)</option>
+                <option value="g">g (그램)</option>
+                <option value="L">L (리터)</option>
+                <option value="kg">kg (킬로그램)</option>
+                <option value="개">개 (수량)</option>
+              </select>
+            </div>
+            <div class="form-group">
+              <label class="form-label" for="itemMinThreshold">최소 재고 기준 (알림) *</label>
+              <input type="number" id="itemMinThreshold" class="form-input" placeholder="300" min="0" required>
+            </div>
+          </div>
+
+          <div class="form-row">
+            <div class="form-group">
+              <label class="form-label" for="itemDecantAmount">💡 기본 1회 소분 용량</label>
+              <input type="number" id="itemDecantAmount" class="form-input" placeholder="200" min="1" required>
+            </div>
+            <div class="form-group">
+              <label class="form-label" for="itemLocation">보관 위치</label>
+              <input type="text" id="itemLocation" class="form-input" placeholder="예: 주방 찬장 하부장">
+            </div>
+          </div>
+
+          <div class="form-group">
+            <label class="form-label" for="itemNotes">메모</label>
+            <textarea id="itemNotes" class="form-textarea" rows="2" placeholder="소분용 작은 용기 위치나 사용 주의사항 등"></textarea>
+          </div>
+        </div>
+
+        <div class="modal-footer">
+          <button type="button" id="cancelItemModalBtn" class="btn btn-secondary">취소</button>
+          <button type="submit" class="btn btn-primary"><i class="fa-solid fa-check"></i> 저장하기</button>
+        </div>
+      </form>
+    </div>
+  </div>
+
+  <!-- Decant (소분하기) Quick Modal -->
+  <div id="decantModalBackdrop" class="modal-backdrop">
+    <div class="modal">
+      <div class="modal-header">
+        <h3 class="modal-title"><i class="fa-solid fa-wine-bottle" style="color: #2dd4bf;"></i> 식료품 소분하기</h3>
+        <button id="closeDecantModalBtn" class="close-btn"><i class="fa-solid fa-xmark"></i></button>
+      </div>
+      <div class="modal-body">
+        <input type="hidden" id="decantItemId">
+        <p id="decantItemDesc" style="font-size: 0.95rem; color: var(--text-secondary); margin-bottom: 1rem;">
+          작은 병에 소분하여 원래 대용량 본품에서 차감할 용량을 선택하세요.
+        </p>
+
+        <div class="form-group">
+          <label class="form-label">빠른 소분 용량 선택</label>
+          <div class="preset-grid">
+            <button type="button" class="preset-btn" data-amount="50">50 mL</button>
+            <button type="button" class="preset-btn" data-amount="100">100 mL</button>
+            <button type="button" class="preset-btn" data-amount="150">150 mL</button>
+            <button type="button" class="preset-btn" data-amount="200">200 mL</button>
+            <button type="button" class="preset-btn" data-amount="250">250 mL</button>
+            <button type="button" class="preset-btn" data-amount="300">300 mL</button>
+          </div>
+        </div>
+
+        <div class="form-group">
+          <label class="form-label" for="customDecantInput">직접 차감 용량 입력</label>
+          <input type="number" id="customDecantInput" class="form-input" placeholder="차감할 용량 (예: 200)" min="1">
+        </div>
+      </div>
+      <div class="modal-footer">
+        <button type="button" id="cancelDecantBtn" class="btn btn-secondary">취소</button>
+        <button type="button" id="confirmDecantBtn" class="btn btn-decant">
+          <i class="fa-solid fa-minus"></i> 소분 차감 적용
+        </button>
+      </div>
+    </div>
+  </div>
+
+  <!-- Shopping List Modal -->
+  <div id="shoppingModalBackdrop" class="modal-backdrop">
+    <div class="modal" style="max-width: 600px;">
+      <div class="modal-header">
+        <h3 class="modal-title"><i class="fa-solid fa-cart-shopping" style="color: #fbbf24;"></i> 장보기 목록 (구매 필요)</h3>
+        <button id="closeShoppingModalBtn" class="close-btn"><i class="fa-solid fa-xmark"></i></button>
+      </div>
+      <div class="modal-body">
+        <p style="font-size: 0.9rem; color: var(--text-secondary); margin-bottom: 1rem;">
+          최소 재고 기준 이하로 떨어진 식료품들이 자동으로 장보기 목록에 등록되었습니다.
+        </p>
+
+        <div id="shoppingListContainer" class="shopping-list">
+          <!-- Dynamic shopping list items -->
+        </div>
+      </div>
+      <div class="modal-footer">
+        <button type="button" id="closeShoppingFooterBtn" class="btn btn-secondary">닫기</button>
+      </div>
+    </div>
+  </div>
+
+  <!-- Toast Notification Container -->
+  <div id="toastContainer" class="toast-container"></div>
+
+  <!-- Main JavaScript Application -->
+  <script type="module" src="js/app.js"></script>
+</body>
+</html>
