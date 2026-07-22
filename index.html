@@ -282,8 +282,16 @@
           <!-- Dynamic shopping list items -->
         </div>
       </div>
-      <div class="modal-footer">
-        <button type="button" id="closeShoppingFooterBtn" class="btn btn-secondary">닫기</button>
+      <div class="modal-footer shopping-modal-footer">
+        <div class="footer-actions">
+          <button type="button" id="copyShoppingListBtn" class="btn btn-primary" title="장보기 목록 텍스트 복사">
+            <i class="fa-solid fa-copy"></i> 텍스트 복사
+          </button>
+          <button type="button" id="shareShoppingListBtn" class="btn btn-secondary" title="앱/메시지로 공유">
+            <i class="fa-solid fa-share-nodes"></i> 공유하기
+          </button>
+        </div>
+        <button type="button" id="closeShoppingFooterBtn" class="btn btn-secondary btn-close-modal">닫기</button>
       </div>
     </div>
   </div>

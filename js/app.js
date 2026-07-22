@@ -47,6 +47,8 @@ const shoppingListBtn = document.getElementById('shoppingListBtn');
 const shoppingListContainer = document.getElementById('shoppingListContainer');
 const closeShoppingModalBtn = document.getElementById('closeShoppingModalBtn');
 const closeShoppingFooterBtn = document.getElementById('closeShoppingFooterBtn');
+const copyShoppingListBtn = document.getElementById('copyShoppingListBtn');
+const shareShoppingListBtn = document.getElementById('shareShoppingListBtn');
 
 const resetSampleDataBtn = document.getElementById('resetSampleDataBtn');
 const themeToggleBtn = document.getElementById('themeToggleBtn');
@@ -117,10 +119,12 @@ function setupEventListeners() {
     });
   });
 
-  // Shopping List Modal Triggers
+  // Shopping List Modal Triggers & Copy/Share
   shoppingListBtn.addEventListener('click', openShoppingModal);
   closeShoppingModalBtn.addEventListener('click', closeShoppingModal);
   closeShoppingFooterBtn.addEventListener('click', closeShoppingModal);
+  if (copyShoppingListBtn) copyShoppingListBtn.addEventListener('click', handleCopyShoppingList);
+  if (shareShoppingListBtn) shareShoppingListBtn.addEventListener('click', handleShareShoppingList);
 
   // Theme Toggle
   themeToggleBtn.addEventListener('click', toggleTheme);
@@ -492,7 +496,11 @@ function openShoppingModal() {
         <p style="font-size: 0.85rem;">모든 본품 재고가 충분합니다.</p>
       </div>
     `;
+    if (copyShoppingListBtn) copyShoppingListBtn.disabled = true;
+    if (shareShoppingListBtn) shareShoppingListBtn.disabled = true;
   } else {
+    if (copyShoppingListBtn) copyShoppingListBtn.disabled = false;
+    if (shareShoppingListBtn) shareShoppingListBtn.disabled = false;
     shoppingListContainer.innerHTML = shoppingItems.map(item => {
       const status = PantryStore.getItemStatus(item);
       return `
@@ -524,6 +532,92 @@ window.refillFromShopping = function(id) {
 
 function closeShoppingModal() {
   shoppingModalBackdrop.classList.remove('active');
+}
+
+// Generate formatted shopping list plain text
+function getFormattedShoppingListText() {
+  const items = store.getItems();
+  const shoppingItems = items.filter(item => {
+    const status = PantryStore.getItemStatus(item);
+    return status.code === 'critical' || status.code === 'warning';
+  });
+
+  if (shoppingItems.length === 0) {
+    return null;
+  }
+
+  const todayStr = new Date().toLocaleDateString('ko-KR', {
+    year: 'numeric',
+    month: 'long',
+    day: 'numeric'
+  });
+
+  let text = `🛒 [PantryLog] 구매 필요 장보기 목록\n`;
+  text += `----------------------------------------\n`;
+
+  shoppingItems.forEach((item, index) => {
+    const brandStr = item.brand ? ` [${item.brand}]` : '';
+    const locStr = item.location ? ` | 보관: ${item.location}` : '';
+    text += `${index + 1}. ${item.name}${brandStr}\n`;
+    text += `   - 현재: ${item.currentCapacity} ${item.unit} / 최소기준: ${item.minThreshold} ${item.unit}${locStr}\n`;
+  });
+
+  text += `----------------------------------------\n`;
+  text += `총 ${shoppingItems.length}개 품목 (작성일: ${todayStr})`;
+
+  return text;
+}
+
+// Copy shopping list to clipboard
+async function handleCopyShoppingList() {
+  const text = getFormattedShoppingListText();
+  if (!text) {
+    showToast('구매가 필요한 식료품 목록이 비어있습니다.', 'warning');
+    return;
+  }
+
+  try {
+    if (navigator.clipboard && navigator.clipboard.writeText) {
+      await navigator.clipboard.writeText(text);
+    } else {
+      const textarea = document.createElement('textarea');
+      textarea.value = text;
+      document.body.appendChild(textarea);
+      textarea.select();
+      document.execCommand('copy');
+      document.body.removeChild(textarea);
+    }
+    showToast('📋 장보기 목록이 클립보드에 복사되었습니다!', 'success');
+  } catch (err) {
+    console.error('Clipboard copy failed:', err);
+    showToast('클립보드 복사 중 오류가 발생했습니다.', 'danger');
+  }
+}
+
+// Share shopping list using Web Share API or Clipboard Fallback
+async function handleShareShoppingList() {
+  const text = getFormattedShoppingListText();
+  if (!text) {
+    showToast('구매가 필요한 식료품 목록이 비어있습니다.', 'warning');
+    return;
+  }
+
+  if (navigator.share) {
+    try {
+      await navigator.share({
+        title: 'PantryLog 장보기 목록',
+        text: text
+      });
+      showToast('📤 장보기 목록 공유 완료!', 'success');
+    } catch (err) {
+      if (err.name !== 'AbortError') {
+        console.error('Share failed:', err);
+        handleCopyShoppingList();
+      }
+    }
+  } else {
+    handleCopyShoppingList();
+  }
 }
 
 // Toast Notification System

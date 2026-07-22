@@ -846,6 +846,24 @@ body:not(.light-theme) .hero-tag {
   flex: 2;
 }
 
+.shopping-modal-footer {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  flex-wrap: wrap;
+  gap: 0.75rem;
+}
+
+.shopping-modal-footer .footer-actions {
+  display: flex;
+  gap: 0.5rem;
+  flex-wrap: wrap;
+}
+
+.shopping-modal-footer .btn {
+  flex: initial !important;
+}
+
 .btn-theme-toggle {
   background: var(--bg-chip);
   color: var(--text-primary);
